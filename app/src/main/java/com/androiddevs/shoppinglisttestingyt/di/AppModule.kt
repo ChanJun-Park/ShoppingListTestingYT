@@ -7,41 +7,49 @@ import com.androiddevs.shoppinglisttestingyt.data.local.ShoppingItemDatabase
 import com.androiddevs.shoppinglisttestingyt.data.remote.PixabayAPI
 import com.androiddevs.shoppinglisttestingyt.other.Constants.BASE_URL
 import com.androiddevs.shoppinglisttestingyt.other.Constants.DATABASE_NAME
+import com.androiddevs.shoppinglisttestingyt.repositories.DefaultShoppingRepository
+import com.androiddevs.shoppinglisttestingyt.repositories.ShoppingRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
-@InstallIn(ApplicationComponent::class)
-object AppModule {
+@InstallIn(SingletonComponent::class)
+abstract class AppModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideShoppingItemDatabase(@ApplicationContext context: Context): ShoppingItemDatabase {
-        return Room
-            .databaseBuilder(context, ShoppingItemDatabase::class.java, DATABASE_NAME)
-            .build()
-    }
+    abstract fun provideShoppingRepository(defaultShoppingRepository: DefaultShoppingRepository) : ShoppingRepository
 
-    @Provides
-    @Singleton
-    fun provideShoppingDao(shoppingItemDatabase: ShoppingItemDatabase): ShoppingDao {
-        return shoppingItemDatabase.shoppingDao()
-    }
+    companion object {
+        @Provides
+        @Singleton
+        fun provideShoppingItemDatabase(@ApplicationContext context: Context): ShoppingItemDatabase {
+            return Room
+                .databaseBuilder(context, ShoppingItemDatabase::class.java, DATABASE_NAME)
+                .build()
+        }
 
-    @Provides
-    @Singleton
-    fun providePixabayApi(): PixabayAPI {
-        return Retrofit.Builder()
-            .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(BASE_URL)
-            .build()
-            .create(PixabayAPI::class.java)
-    }
+        @Provides
+        @Singleton
+        fun provideShoppingDao(shoppingItemDatabase: ShoppingItemDatabase): ShoppingDao {
+            return shoppingItemDatabase.shoppingDao()
+        }
 
+        @Provides
+        @Singleton
+        fun providePixabayApi(): PixabayAPI {
+            return Retrofit.Builder()
+                .addConverterFactory(GsonConverterFactory.create())
+                .baseUrl(BASE_URL)
+                .build()
+                .create(PixabayAPI::class.java)
+        }
+    }
 }
