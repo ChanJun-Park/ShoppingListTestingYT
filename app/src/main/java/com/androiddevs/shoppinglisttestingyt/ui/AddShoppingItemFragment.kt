@@ -1,12 +1,39 @@
 package com.androiddevs.shoppinglisttestingyt.ui
 
+import android.os.Bundle
+import android.view.View
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.androiddevs.shoppinglisttestingyt.R
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_add_shopping_item.*
 
 @AndroidEntryPoint
 class AddShoppingItemFragment : Fragment(R.layout.fragment_add_shopping_item) {
 
-    private val viewModel: ShoppingViewModel by activityViewModels()
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    lateinit var viewModel: ShoppingViewModel
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewModel = ViewModelProvider(requireActivity()).get(ShoppingViewModel::class.java)
+
+        ivShoppingImage.setOnClickListener {
+            findNavController().navigate(
+                AddShoppingItemFragmentDirections.actionAddShoppingItemFragmentToImagePickFragment()
+            )
+        }
+
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewModel.setCurImageUrl("")
+                findNavController().popBackStack()
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
+    }
 }
